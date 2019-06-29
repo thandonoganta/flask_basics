@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, session,g
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import pandas as pd
@@ -18,16 +18,22 @@ app.config.update(
 
 db = SQLAlchemy(app)
 
+# Before Requests
+@app.before_request
+def some_function():
+    g.string = '<br> This code ran before my request'
+
+
 # Hello  World
 @app.route('/')
 def hello_flask():
-    return 'Hello Flask!'
+    return 'Hello Flask! <br>' + g.string
 
 # Using query strings
 @app.route('/new/')
 def query_strings(greeting = 'Molo'):
     query_val = request.args.get('greeting', greeting)
-    return '<h1> The greeting is : {0} </h1>'.format(query_val)
+    return '<h1> The greeting is : {0} </h1>'.format(query_val) + g.string
 
 
 # getting rid of query strings
@@ -119,6 +125,13 @@ def jinja_macros():
                     , 'spiderman - homecoming': 1.48}
 
     return render_template('using_macros.html', movies=movies_dict)
+
+# Working with Session Object
+@app.route('/session')
+def session_data():
+    if 'name' not in session:
+        session['name'] = 'Thando'
+    return render_template('session.html', session = session, name=session['name'])
 
 
 class Publication(db.Model):
